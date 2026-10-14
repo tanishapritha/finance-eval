@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from finance_eval.schemas import AgentProposal, FinanceTask, JournalEntry, JournalLine
+from finance_eval.schemas import AgentProposal, JournalEntry, JournalLine
 
 
 class FinanceAgent(Protocol):
@@ -20,8 +20,8 @@ class ReferenceAgent:
     name = "reference"
 
     def run(self, task_input: dict) -> AgentProposal:
-        # The runner attaches no gold labels to task_input. Its private test hook is separate.
-        action = task_input.get("_reference_action")
+        # This agent is only for harness smoke tests and receives the parsed task object separately.
+        action = task_input.get("reference_action")
         if not action:
             return AgentProposal(entries=(), rationale="No fixture reference action.")
         entry = JournalEntry(
