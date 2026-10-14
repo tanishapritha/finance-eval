@@ -49,6 +49,7 @@ class FinanceTask:
     facts: dict[str, Any]
     expected_entries: tuple[JournalEntry, ...] = field(repr=False)
     expected_closing_balances_minor: dict[str, int] = field(repr=False)
+    reference_action: dict[str, Any] | None = field(default=None, repr=False, compare=False)
 
     def agent_view(self) -> dict[str, Any]:
         """Return only task inputs. Gold data must never be exposed to agents."""
