@@ -1,4 +1,7 @@
-"""Loading and validation for the synthetic JSONL finance dataset."""
+"""Loading and validation for synthetic finance JSONL cases.
+
+Gold labels are stored in the dataset but kept separate from the facts passed to agents.
+"""
 
 from __future__ import annotations
 
@@ -25,6 +28,8 @@ def _entry_from_dict(raw: dict[str, Any]) -> JournalEntry:
 
 
 def task_from_dict(raw: dict[str, Any]) -> FinanceTask:
+    facts = dict(raw.get("facts", {}))
+    reference_action = facts.pop("reference_action", None)
     task = FinanceTask(
         case_id=str(raw["case_id"]),
         title=str(raw["title"]),
@@ -34,12 +39,15 @@ def task_from_dict(raw: dict[str, Any]) -> FinanceTask:
         accounts=tuple(str(a) for a in raw["accounts"]),
         opening_balances_minor={str(k): int(v) for k, v in raw["opening_balances_minor"].items()},
         agent_instructions=str(raw["agent_instructions"]),
-        facts=dict(raw.get("facts", {})),
+        facts=facts,
         expected_entries=tuple(_entry_from_dict(e) for e in raw["expected_entries"]),
         expected_closing_balances_minor={
             str(k): int(v) for k, v in raw["expected_closing_balances_minor"].items()
         },
     )
+    # This private annotation is only used by deterministic harness-validation agents.
+    object.__setattr__(task, "_reference_action", reference_action)
+
     if not task.case_id:
         raise ValueError("case_id must not be empty")
     if not task.accounts:
