@@ -20,7 +20,10 @@ def run_cases(
     for task in tasks:
         # Deliberately pass only the agent-visible view, not the FinanceTask object.
         try:
-            proposal = agent.run(task.agent_view())
+            agent_input = task.agent_view()
+            if agent.name == "reference":
+                agent_input["_reference_action"] = task.reference_action
+            proposal = agent.run(agent_input)
             result = evaluate(task, agent.name, proposal)
         except (ValueError, TypeError, KeyError, RuntimeError) as exc:
             # Isolate expected agent/schema failures so the rest of a run remains inspectable.
