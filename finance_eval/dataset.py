@@ -40,14 +40,12 @@ def task_from_dict(raw: dict[str, Any]) -> FinanceTask:
         opening_balances_minor={str(k): int(v) for k, v in raw["opening_balances_minor"].items()},
         agent_instructions=str(raw["agent_instructions"]),
         facts=facts,
+        reference_action=reference_action,
         expected_entries=tuple(_entry_from_dict(e) for e in raw["expected_entries"]),
         expected_closing_balances_minor={
             str(k): int(v) for k, v in raw["expected_closing_balances_minor"].items()
         },
     )
-    # This private annotation is only used by deterministic harness-validation agents.
-    object.__setattr__(task, "_reference_action", reference_action)
-
     if not task.case_id:
         raise ValueError("case_id must not be empty")
     if not task.accounts:
