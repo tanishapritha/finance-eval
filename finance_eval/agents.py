@@ -21,7 +21,7 @@ class ReferenceAgent:
 
     def run(self, task_input: dict) -> AgentProposal:
         # This agent is only for harness smoke tests and receives the parsed task object separately.
-        action = task_input.get("reference_action")
+        action = task_input.get("_reference_action")
         if not action:
             return AgentProposal(entries=(), rationale="No fixture reference action.")
         entry = JournalEntry(
