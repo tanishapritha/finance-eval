@@ -4,7 +4,6 @@ from finance_eval.agents import get_agent
 from finance_eval.dataset import load_dataset
 from finance_eval.evaluator import evaluate
 from finance_eval.schemas import AgentProposal, JournalEntry, JournalLine
-from finance_eval.runner import run_cases
 
 
 DATASET = Path(__file__).parents[1] / "datasets" / "basic.jsonl"
