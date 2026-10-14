@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from finance_eval.agents import FinanceAgent
 from finance_eval.evaluator import evaluate
@@ -22,7 +22,8 @@ def run_cases(
         try:
             proposal = agent.run(task.agent_view())
             result = evaluate(task, agent.name, proposal)
-        except Exception as exc:  # isolate a failed case so a run remains inspectable
+        except (ValueError, TypeError, KeyError, RuntimeError) as exc:
+            # Isolate expected agent/schema failures so the rest of a run remains inspectable.
             result = EvaluationResult(
                 case_id=task.case_id,
                 agent_name=agent.name,
