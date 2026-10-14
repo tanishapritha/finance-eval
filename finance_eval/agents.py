@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from finance_eval.schemas import AgentProposal, FinanceTask, JournalEntry, JournalLine
+from finance_eval.schemas import AgentProposal, JournalEntry, JournalLine
 
 
 class FinanceAgent(Protocol):
