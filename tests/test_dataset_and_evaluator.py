@@ -3,8 +3,8 @@ from pathlib import Path
 from finance_eval.agents import get_agent
 from finance_eval.dataset import load_dataset
 from finance_eval.evaluator import evaluate
-from finance_eval.schemas import AgentProposal
 from finance_eval.runner import run_cases
+from finance_eval.schemas import AgentProposal, JournalEntry, JournalLine
 
 
 DATASET = Path(__file__).parents[1] / "datasets" / "basic.jsonl"
@@ -52,8 +52,6 @@ def test_duplicate_agent_is_detected():
 def test_evaluator_uses_net_account_effect_for_entry_equivalence():
     case = load_dataset(DATASET)[0]
     gold = case.expected_entries[0]
-    from finance_eval.schemas import JournalEntry, JournalLine
-
     reordered = JournalEntry(
         "different-id",
         "equivalent entry",
