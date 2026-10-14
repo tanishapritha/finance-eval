@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from finance_eval.schemas import AgentProposal, JournalEntry, JournalLine
+from finance_eval.schemas import AgentProposal, FinanceTask, JournalEntry, JournalLine
 
 
 class FinanceAgent(Protocol):
@@ -15,13 +15,15 @@ class FinanceAgent(Protocol):
 
 
 class ReferenceAgent:
+    """Fixture-only reference agent; never pass private gold annotations to real agents."""
+
     name = "reference"
 
     def run(self, task_input: dict) -> AgentProposal:
-        facts = task_input["facts"]
-        action = facts.get("expected_action")
+        # The runner attaches no gold labels to task_input. Its private test hook is separate.
+        action = task_input.get("_reference_action")
         if not action:
-            return AgentProposal(entries=(), rationale="No adjustment required by the case facts.")
+            return AgentProposal(entries=(), rationale="No fixture reference action.")
         entry = JournalEntry(
             entry_id=f"ref-{task_input['case_id']}",
             description=str(action["description"]),
@@ -34,7 +36,7 @@ class ReferenceAgent:
                 for line in action["lines"]
             ),
         )
-        return AgentProposal((entry,), rationale="Deterministic reference rule for the synthetic fixture.")
+        return AgentProposal((entry,), rationale="Fixture-driven reference agent for harness validation.")
 
 
 class DuplicateEntryAgent:
@@ -71,6 +73,9 @@ class AlwaysAccrueAgent:
         amount = facts.get("unbilled_amount_minor")
         if amount is None or amount <= 0:
             return AgentProposal(())
+        # This baseline is intended for these fixtures' chart of accounts.
+        if "Expense" not in task_input["accounts"] or "Accrued liabilities" not in task_input["accounts"]:
+            return AgentProposal((), rationale="Fault injection not applicable to this chart of accounts.")
         entry = JournalEntry(
             entry_id=f"accrue-{task_input['case_id']}",
             description="Accrue every unbilled amount regardless of the task requirement.",
