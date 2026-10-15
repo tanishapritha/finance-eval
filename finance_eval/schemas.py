@@ -15,6 +15,8 @@ class JournalLine:
     def __post_init__(self) -> None:
         if not self.account.strip():
             raise ValueError("account must not be empty")
+        if type(self.debit_minor) is not int or type(self.credit_minor) is not int:
+            raise ValueError("debit and credit amounts must be integer minor units")
         if self.debit_minor < 0 or self.credit_minor < 0:
             raise ValueError("debit and credit amounts must be non-negative")
         if self.debit_minor and self.credit_minor:

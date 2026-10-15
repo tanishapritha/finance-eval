@@ -64,3 +64,33 @@ def test_evaluator_uses_net_account_effect_for_entry_equivalence():
     assert result.action_exact
     assert result.ledger_exact
     assert result.passed
+
+
+def test_agent_view_excludes_gold_labels():
+    case = load_dataset(DATASET)[0]
+    view = case.agent_view()
+    assert "expected_entries" not in view
+    assert "expected_closing_balances_minor" not in view
+    assert "reference_action" not in view["facts"]
+
+
+def test_dataset_rejects_fractional_minor_units():
+    import json
+
+    from finance_eval.dataset import task_from_dict
+
+    raw = json.loads(DATASET.read_text(encoding="utf-8").splitlines()[0])
+    raw["expected_entries"][0]["lines"][0]["debit_minor"] = 12500.5
+    try:
+        task_from_dict(raw)
+    except ValueError as exc:
+        assert "integer minor-unit" in str(exc)
+    else:
+        raise AssertionError("fractional minor units must be rejected")
+
+
+def test_journal_line_rejects_float_amounts():
+    import pytest
+
+    with pytest.raises(ValueError, match="integer minor units"):
+        JournalLine("Expense", debit_minor=1.5)
