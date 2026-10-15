@@ -11,7 +11,7 @@ def test_cli_run_and_report(tmp_path: Path, monkeypatch):
         ["finance-eval", "run", "--dataset", "basic", "--agent", "reference", "--output", str(result_file)],
     )
     assert main() == 0
-    assert len(result_file.read_text(encoding="utf-8").splitlines()) == 4
+    assert len(result_file.read_text(encoding="utf-8").splitlines()) >= 4
 
     report_file = tmp_path / "report.json"
     monkeypatch.setattr(
@@ -20,5 +20,5 @@ def test_cli_run_and_report(tmp_path: Path, monkeypatch):
     )
     assert main() == 0
     report = json.loads(report_file.read_text(encoding="utf-8"))
-    assert report["cases"] == 4
+    assert report["cases"] == len(result_file.read_text(encoding="utf-8").splitlines())
     assert report["pass_rate"] == 1.0

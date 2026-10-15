@@ -11,9 +11,11 @@ A deterministic evaluation harness for financial agents. It separates **agent pr
 The first benchmark slice focuses on month-end adjustment decisions:
 
 - Accrue services received before period-end when the invoice has not arrived.
-- Do not accrue services that have not yet been received.
+- Do not accrue services that have not yet been received or when the unbilled amount is zero.
 - Avoid duplicating expenses already posted.
 - Accrue unpaid utilities consumed during the reporting period.
+- Recognize prepaid insurance as coverage is consumed.
+- Record depreciation only when an asset is in service and the period amount has not already been posted.
 
 Each case defines agent-visible facts, a chart of accounts, opening balances, expected journal effects, and expected closing balances. Gold annotations stay separate from the task view provided to normal agents.
 
