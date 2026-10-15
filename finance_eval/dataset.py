@@ -84,4 +84,4 @@ def load_dataset(path: str | Path) -> list[FinanceTask]:
 def default_dataset_path(name: str) -> Path:
     if name != "basic":
         raise ValueError(f"unknown dataset {name!r}; available dataset: basic")
-    return Path(__file__).resolve().parent.parent / "datasets" / "basic.jsonl"
+    return Path(__file__).resolve().parent / "data" / "basic.jsonl"
