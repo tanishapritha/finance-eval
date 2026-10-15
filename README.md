@@ -19,6 +19,24 @@ The first benchmark slice focuses on month-end adjustment decisions:
 
 Each case defines agent-visible facts, a chart of accounts, opening balances, expected journal effects, and expected closing balances. Gold annotations stay separate from the task view provided to normal agents.
 
+## Current fixture coverage
+
+The initial dataset contains nine synthetic cases. The case IDs are stable identifiers for result files and regression tests.
+
+| Case ID | Decision under test | Expected outcome |
+| --- | --- | --- |
+| `accrual-required-001` | Service received; invoice not received | Accrue the expense and liability |
+| `no-accrual-not-received-001` | Service not received by period-end | No entry |
+| `invoice-posted-001` | Invoice already recorded in the ledger | No duplicate entry |
+| `required-adjustment-002` | Unpaid utilities consumed during the period | Accrue utilities |
+| `zero-amount-no-accrual-001` | No unbilled amount exists | No entry |
+| `prepaid-expense-recognition-001` | Insurance coverage consumed during the period | Expense consumed coverage and reduce prepaid asset |
+| `depreciation-required-001` | Asset in service; period depreciation not posted | Record depreciation expense and accumulated depreciation |
+| `depreciation-before-service-no-entry-001` | Asset not yet in service | No depreciation entry |
+| `depreciation-already-posted-no-entry-001` | Period depreciation already posted | No duplicate entry |
+
+These fixtures are designed for evaluator and agent-regression testing, not statistical claims about model quality. They do not constitute independent accounting review or comprehensive GAAP/IFRS coverage.
+
 ## Design
 
 ```text
