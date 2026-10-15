@@ -90,3 +90,27 @@ def test_dataset_rejects_fractional_minor_units():
 def test_journal_line_rejects_float_amounts():
     with pytest.raises(ValueError, match="integer minor units"):
         JournalLine("Expense", debit_minor=1.5)
+
+
+def test_dataset_rejects_gold_balances_that_do_not_match_entries():
+    raw = json.loads(DATASET.read_text(encoding="utf-8").splitlines()[0])
+    raw["expected_closing_balances_minor"]["Expense"] += 1
+    with pytest.raises(ValueError, match="do not produce expected_closing_balances_minor"):
+        task_from_dict(raw)
+
+
+def test_evaluator_rejects_unbalanced_proposal_without_posting():
+    case = load_dataset(DATASET)[0]
+    invalid = JournalEntry(
+        "invalid",
+        "Unbalanced entry",
+        (
+            JournalLine("Expense", debit_minor=100),
+            JournalLine("Accrued liabilities", credit_minor=90),
+        ),
+    )
+    result = evaluate(case, "invalid-agent", AgentProposal((invalid,)))
+    assert not result.passed
+    assert not result.ledger_exact
+    assert result.accepted_entry_count == 0
+    assert any("unbalanced entry" in error for error in result.errors)

@@ -38,6 +38,9 @@ def _entry_from_dict(raw: dict[str, Any]) -> JournalEntry:
 def task_from_dict(raw: dict[str, Any]) -> FinanceTask:
     facts = dict(raw.get("facts", {}))
     reference_action = facts.pop("reference_action", None)
+    for key, value in facts.items():
+        if key.endswith("_minor"):
+            _integer(value, f"facts[{key!r}]")
     task = FinanceTask(
         case_id=str(raw["case_id"]),
         title=str(raw["title"]),
@@ -45,13 +48,17 @@ def task_from_dict(raw: dict[str, Any]) -> FinanceTask:
         as_of_date=str(raw["as_of_date"]),
         currency=str(raw.get("currency", "USD")),
         accounts=tuple(str(a) for a in raw["accounts"]),
-        opening_balances_minor={str(k): _integer(v, f"opening_balances_minor[{k!r}]") for k, v in raw["opening_balances_minor"].items()},
+        opening_balances_minor={
+            str(k): _integer(v, f"opening_balances_minor[{k!r}]")
+            for k, v in raw["opening_balances_minor"].items()
+        },
         agent_instructions=str(raw["agent_instructions"]),
         facts=facts,
         reference_action=reference_action,
         expected_entries=tuple(_entry_from_dict(e) for e in raw["expected_entries"]),
         expected_closing_balances_minor={
-            str(k): _integer(v, f"expected_closing_balances_minor[{k!r}]") for k, v in raw["expected_closing_balances_minor"].items()
+            str(k): _integer(v, f"expected_closing_balances_minor[{k!r}]")
+            for k, v in raw["expected_closing_balances_minor"].items()
         },
     )
     if not task.case_id:
