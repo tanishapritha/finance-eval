@@ -15,7 +15,7 @@ class FinanceAgent(Protocol):
 
 
 class ReferenceAgent:
-    """Fixture-only reference agent; never pass private gold annotations to real agents."""
+    """Fixture-only oracle baseline; never pass private gold annotations to real agents."""
 
     name = "reference"
 
@@ -40,22 +40,44 @@ class ReferenceAgent:
 
 
 class DuplicateEntryAgent:
+    """Faulty baseline that duplicates an accrual inferred from public task facts.
+
+    Unlike the reference baseline, this agent does not receive the private reference action.
+    It is intentionally narrow and exists to test whether the evaluator catches over-posting.
+    """
+
     name = "duplicate"
 
     def run(self, task_input: dict) -> AgentProposal:
-        proposal = ReferenceAgent().run(task_input)
-        if not proposal.entries:
-            return proposal
-        original = proposal.entries[0]
-        duplicate = JournalEntry(
-            entry_id=original.entry_id + "-duplicate",
-            description=original.description,
-            lines=original.lines,
+        facts = task_input["facts"]
+        amount = facts.get("unbilled_amount_minor")
+        accounts = task_input["accounts"]
+        expense_account = next(
+            (account for account in accounts if "expense" in account.casefold()),
+            None,
         )
-        return AgentProposal(
-            entries=proposal.entries + (duplicate,),
-            rationale="Fault injection: posts the same action twice.",
+        liability_account = next(
+            (account for account in accounts if account.casefold() == "accrued liabilities"),
+            None,
         )
+        if (
+            not facts.get("service_received")
+            or facts.get("invoice_received")
+            or not isinstance(amount, int)
+            or amount <= 0
+            or expense_account is None
+            or liability_account is None
+        ):
+            return AgentProposal((), rationale="Fault injection not applicable to this task.")
+        lines = (
+            JournalLine(expense_account, debit_minor=amount),
+            JournalLine(liability_account, credit_minor=amount),
+        )
+        entries = (
+            JournalEntry(f"duplicate-{task_input['case_id']}-1", "First accrual", lines),
+            JournalEntry(f"duplicate-{task_input['case_id']}-2", "Duplicate accrual", lines),
+        )
+        return AgentProposal(entries, rationale="Fault injection: posts the same accrual twice.")
 
 
 class NoActionAgent:

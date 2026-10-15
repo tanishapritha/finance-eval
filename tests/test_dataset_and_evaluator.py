@@ -3,6 +3,7 @@ from pathlib import Path
 from finance_eval.agents import get_agent
 from finance_eval.dataset import load_dataset
 from finance_eval.evaluator import evaluate
+from finance_eval.runner import run_cases
 from finance_eval.schemas import AgentProposal, JournalEntry, JournalLine
 
 
@@ -40,12 +41,14 @@ def test_no_action_agent_fails_cases_that_need_actions():
     assert result_by_case["no-accrual-not-received-001"].passed is True
 
 
-def test_duplicate_agent_is_detected():
+def test_duplicate_agent_posts_a_real_duplicate():
     cases = load_dataset(DATASET)
     results = run_cases(cases, get_agent("duplicate"))
     target = next(result for result in results if result.case_id == "accrual-required-001")
     assert not target.passed
-    assert target.monetary_error_minor > 0
+    assert target.proposed_entry_count == 2
+    assert target.accepted_entry_count == 2
+    assert target.monetary_error_minor == 2 * 12500
 
 
 def test_evaluator_uses_net_account_effect_for_entry_equivalence():
