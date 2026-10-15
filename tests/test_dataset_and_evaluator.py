@@ -182,6 +182,6 @@ def test_always_accrue_baseline_is_caught_on_inapplicable_case():
 def test_dataset_rejects_duplicate_case_ids(tmp_path):
     first_case = DATASET.read_text(encoding="utf-8").splitlines()[0]
     dataset_path = tmp_path / "duplicate.jsonl"
-    dataset_path.write_text(f"{first_case}\\n{first_case}\\n", encoding="utf-8")
+    dataset_path.write_text(f"{first_case}\n{first_case}\n", encoding="utf-8")
     with pytest.raises(ValueError, match="duplicate case_id"):
         load_dataset(dataset_path)
