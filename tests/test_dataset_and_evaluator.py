@@ -114,3 +114,42 @@ def test_evaluator_rejects_unbalanced_proposal_without_posting():
     assert not result.ledger_exact
     assert result.accepted_entry_count == 0
     assert any("unbalanced entry" in error for error in result.errors)
+
+
+def test_agent_view_facts_are_isolated_from_mutation():
+    case = load_dataset(DATASET)[0]
+    view = case.agent_view()
+    view["facts"]["service_received"] = False
+    assert case.facts["service_received"] is True
+
+
+def test_runner_records_unexpected_agent_exceptions_per_case():
+    class BrokenAgent:
+        name = "broken"
+
+        def run(self, task_input):
+            raise ZeroDivisionError("simulated agent failure")
+
+    results = run_cases(load_dataset(DATASET), BrokenAgent())
+    assert len(results) == 4
+    assert all(not result.passed for result in results)
+    assert all(
+        any("ZeroDivisionError" in error for error in result.errors)
+        for result in results
+    )
+
+
+def test_runner_rejects_wrong_agent_return_type():
+    class InvalidAgent:
+        name = "invalid-return"
+
+        def run(self, task_input):
+            return {"entries": []}
+
+    results = run_cases(load_dataset(DATASET), InvalidAgent())
+    assert len(results) == 4
+    assert all(not result.passed for result in results)
+    assert all(
+        any("must return AgentProposal" in error for error in result.errors)
+        for result in results
+    )

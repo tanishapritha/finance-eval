@@ -8,7 +8,7 @@ from pathlib import Path
 
 from finance_eval.agents import FinanceAgent
 from finance_eval.evaluator import evaluate
-from finance_eval.schemas import EvaluationResult, FinanceTask
+from finance_eval.schemas import AgentProposal, EvaluationResult, FinanceTask
 
 
 def run_cases(
@@ -19,14 +19,17 @@ def run_cases(
     results: list[EvaluationResult] = []
     for task in tasks:
         # Deliberately pass only the agent-visible view, not the FinanceTask object.
+        agent_input = task.agent_view()
+        if agent.name == "reference":
+            agent_input["_reference_action"] = task.reference_action
         try:
-            agent_input = task.agent_view()
-            if agent.name == "reference":
-                agent_input["_reference_action"] = task.reference_action
             proposal = agent.run(agent_input)
-            result = evaluate(task, agent.name, proposal)
-        except (ValueError, TypeError, KeyError, RuntimeError) as exc:
-            # Isolate expected agent/schema failures so the rest of a run remains inspectable.
+            if not isinstance(proposal, AgentProposal):
+                raise TypeError(
+                    f"agent must return AgentProposal, got {type(proposal).__name__}"
+                )
+        except Exception as exc:
+            # Isolate agent failures per case; verifier failures should still surface.
             result = EvaluationResult(
                 case_id=task.case_id,
                 agent_name=agent.name,
@@ -40,6 +43,8 @@ def run_cases(
                 closing_balances_minor=dict(task.opening_balances_minor),
                 monetary_error_minor=0,
             )
+        else:
+            result = evaluate(task, agent.name, proposal)
         results.append(result)
 
     if output_path is not None:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from copy import deepcopy
 from typing import Any
 
 
@@ -64,7 +65,7 @@ class FinanceTask:
             "accounts": list(self.accounts),
             "opening_balances_minor": dict(self.opening_balances_minor),
             "agent_instructions": self.agent_instructions,
-            "facts": self.facts,
+            "facts": deepcopy(self.facts),
         }
 
 
