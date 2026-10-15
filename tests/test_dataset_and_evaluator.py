@@ -153,3 +153,17 @@ def test_runner_rejects_wrong_agent_return_type():
         any("must return AgentProposal" in error for error in result.errors)
         for result in results
     )
+
+
+def test_agent_name_cannot_unlock_reference_annotations():
+    seen_inputs = []
+
+    class SpoofedReferenceAgent:
+        name = "reference"
+
+        def run(self, task_input):
+            seen_inputs.append(task_input)
+            return AgentProposal(())
+
+    run_cases([load_dataset(DATASET)[0]], SpoofedReferenceAgent())
+    assert "_reference_action" not in seen_inputs[0]

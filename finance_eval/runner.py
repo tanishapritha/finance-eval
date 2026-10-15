@@ -6,7 +6,7 @@ import json
 from collections.abc import Iterable
 from pathlib import Path
 
-from finance_eval.agents import FinanceAgent
+from finance_eval.agents import FinanceAgent, ReferenceAgent
 from finance_eval.evaluator import evaluate
 from finance_eval.schemas import AgentProposal, EvaluationResult, FinanceTask
 
@@ -20,7 +20,7 @@ def run_cases(
     for task in tasks:
         # Deliberately pass only the agent-visible view, not the FinanceTask object.
         agent_input = task.agent_view()
-        if agent.name == "reference":
+        if isinstance(agent, ReferenceAgent):
             agent_input["_reference_action"] = task.reference_action
         try:
             proposal = agent.run(agent_input)
