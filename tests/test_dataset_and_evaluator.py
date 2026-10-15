@@ -167,3 +167,21 @@ def test_agent_name_cannot_unlock_reference_annotations():
 
     run_cases([load_dataset(DATASET)[0]], SpoofedReferenceAgent())
     assert "_reference_action" not in seen_inputs[0]
+
+
+def test_always_accrue_baseline_is_caught_on_inapplicable_case():
+    results = run_cases(load_dataset(DATASET), get_agent("always-accrue"))
+    target = next(
+        result for result in results if result.case_id == "no-accrual-not-received-001"
+    )
+    assert not target.passed
+    assert target.proposed_entry_count == 1
+    assert target.monetary_error_minor == 2 * 12500
+
+
+def test_dataset_rejects_duplicate_case_ids(tmp_path):
+    first_case = DATASET.read_text(encoding="utf-8").splitlines()[0]
+    dataset_path = tmp_path / "duplicate.jsonl"
+    dataset_path.write_text(f"{first_case}\\n{first_case}\\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="duplicate case_id"):
+        load_dataset(dataset_path)
