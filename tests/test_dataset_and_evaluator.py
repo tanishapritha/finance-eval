@@ -1,9 +1,13 @@
+import json
+
+import pytest
+
 from finance_eval.agents import get_agent
-from finance_eval.dataset import default_dataset_path, load_dataset
+from finance_eval.dataset import default_dataset_path, load_dataset, task_from_dict
 from finance_eval.evaluator import evaluate
+from finance_eval.ledger import replay
 from finance_eval.runner import run_cases
 from finance_eval.schemas import AgentProposal, JournalEntry, JournalLine
-
 
 DATASET = default_dataset_path("basic")
 
@@ -15,8 +19,6 @@ def test_dataset_loads_unique_cases():
 
 
 def test_gold_entries_replay_to_gold_balances():
-    from finance_eval.ledger import replay
-
     for case in load_dataset(DATASET):
         result = replay(case.accounts, case.opening_balances_minor, case.expected_entries)
         assert not result.errors, case.case_id
@@ -75,10 +77,6 @@ def test_agent_view_excludes_gold_labels():
 
 
 def test_dataset_rejects_fractional_minor_units():
-    import json
-
-    from finance_eval.dataset import task_from_dict
-
     raw = json.loads(DATASET.read_text(encoding="utf-8").splitlines()[0])
     raw["expected_entries"][0]["lines"][0]["debit_minor"] = 12500.5
     try:
@@ -90,7 +88,5 @@ def test_dataset_rejects_fractional_minor_units():
 
 
 def test_journal_line_rejects_float_amounts():
-    import pytest
-
     with pytest.raises(ValueError, match="integer minor units"):
         JournalLine("Expense", debit_minor=1.5)
