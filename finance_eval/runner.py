@@ -28,7 +28,7 @@ def run_cases(
                 raise TypeError(
                     f"agent must return AgentProposal, got {type(proposal).__name__}"
                 )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — isolate arbitrary third-party agent failures
             # Isolate agent failures per case; verifier failures should still surface.
             result = EvaluationResult(
                 case_id=task.case_id,
