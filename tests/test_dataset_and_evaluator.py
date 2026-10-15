@@ -1,5 +1,5 @@
 from finance_eval.agents import get_agent
-from finance_eval.dataset import default_dataset_path, load_dataset
+from finance_eval.dataset import load_dataset, default_dataset_path
 from finance_eval.evaluator import evaluate
 from finance_eval.runner import run_cases
 from finance_eval.schemas import AgentProposal, JournalEntry, JournalLine
