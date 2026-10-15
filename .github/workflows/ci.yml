@@ -17,3 +17,12 @@ jobs:
       - run: ruff check .
       - run: pytest
       - run: python -m finance_eval run --dataset basic --agent reference --output /tmp/basic.jsonl
+      - name: Build source and wheel distributions
+        run: python -m build
+      - name: Smoke-test the installed wheel outside the checkout
+        run: |
+          python -m venv /tmp/finance-eval-venv
+          /tmp/finance-eval-venv/bin/python -m pip install dist/*.whl
+          cd /tmp
+          /tmp/finance-eval-venv/bin/finance-eval run --dataset basic --agent reference --output /tmp/wheel-smoke.jsonl
+          /tmp/finance-eval-venv/bin/finance-eval report --input /tmp/wheel-smoke.jsonl
