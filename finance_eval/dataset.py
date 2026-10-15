@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from finance_eval.ledger import replay
+from finance_eval.ledger import entry_net_effect, replay
 from finance_eval.schemas import FinanceTask, JournalEntry, JournalLine
 
 
@@ -73,6 +73,22 @@ def task_from_dict(raw: dict[str, Any]) -> FinanceTask:
         raise ValueError(f"{task.case_id}: unknown opening accounts: {sorted(unknown_opening)}")
     if unknown_expected:
         raise ValueError(f"{task.case_id}: unknown expected accounts: {sorted(unknown_expected)}")
+    if reference_action is not None:
+        if not isinstance(reference_action, dict):
+            raise ValueError(f"{task.case_id}: reference_action must be an object or null")
+        reference_entry = _entry_from_dict(
+            {
+                "entry_id": f"reference-{task.case_id}",
+                "description": reference_action.get("description", ""),
+                "lines": reference_action["lines"],
+            }
+        )
+        if (
+            len(task.expected_entries) != 1
+            or entry_net_effect(reference_entry) != entry_net_effect(task.expected_entries[0])
+        ):
+            raise ValueError(f"{task.case_id}: reference_action does not match expected_entries")
+
     gold_replay = replay(task.accounts, task.opening_balances_minor, task.expected_entries)
     if gold_replay.errors:
         raise ValueError(f"{task.case_id}: invalid expected_entries")

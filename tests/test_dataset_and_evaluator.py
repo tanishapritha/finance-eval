@@ -185,3 +185,10 @@ def test_dataset_rejects_duplicate_case_ids(tmp_path):
     dataset_path.write_text(f"{first_case}\n{first_case}\n", encoding="utf-8")
     with pytest.raises(ValueError, match="duplicate case_id"):
         load_dataset(dataset_path)
+
+
+def test_dataset_rejects_reference_annotation_mismatch():
+    raw = json.loads(DATASET.read_text(encoding="utf-8").splitlines()[0])
+    raw["facts"]["reference_action"]["lines"][0]["debit_minor"] += 1
+    with pytest.raises(ValueError, match="reference_action does not match expected_entries"):
+        task_from_dict(raw)
