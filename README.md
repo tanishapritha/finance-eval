@@ -1,5 +1,7 @@
 # Finance Eval
 
+[![CI](https://github.com/tanishapritha/finance-eval/actions/workflows/ci.yml/badge.svg)](https://github.com/tanishapritha/finance-eval/actions/workflows/ci.yml)
+
 A deterministic evaluation harness for financial agents. It separates **agent proposals** from **ledger verification** so a model can be evaluated on accounting decisions without relying on the model to grade its own work.
 
 > **Status:** early research/engineering prototype. The included dataset is synthetic and small. Results are harness-validation signals, not evidence of production accounting competence, a comprehensive accounting benchmark, or accounting advice.
